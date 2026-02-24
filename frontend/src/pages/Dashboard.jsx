@@ -21,6 +21,7 @@ export default function Dashboard() {
   const navigate                  = useNavigate();
   const [tab, setTab]             = useState('leads');
   const [leads, setLeads]         = useState([]);
+  const [allLeads, setAllLeads]   = useState([]);
   const [staff, setStaff]         = useState([]);
   const [loading, setLoading]     = useState(true);
   const [search, setSearch]       = useState('');
@@ -34,6 +35,13 @@ export default function Dashboard() {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
   };
+
+  const fetchAllLeads = useCallback(async () => {
+    try {
+      const { data } = await api.get('/lead');
+      setAllLeads(data.leads || []);
+    } catch { /* silent */ }
+  }, []);
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -60,9 +68,9 @@ export default function Dashboard() {
   }, [isAdmin]);
 
   useEffect(() => {
-    if (tab === 'leads') fetchLeads();
+    if (tab === 'leads') { fetchLeads(); fetchAllLeads(); }
     if (tab === 'staff') fetchStaff();
-  }, [tab, fetchLeads, fetchStaff]);
+  }, [tab, fetchLeads, fetchStaff, fetchAllLeads]);
 
   const handleLogout = async () => { await logout(); navigate('/login'); };
 
@@ -70,6 +78,7 @@ export default function Dashboard() {
     try {
       await api.patch(`/lead/${leadId}/status`, { status });
       setLeads(p => p.map(l => l.id === leadId ? { ...l, status } : l));
+      setAllLeads(p => p.map(l => l.id === leadId ? { ...l, status } : l));
       showToast('Status updated');
     } catch { showToast('Failed to update status', 'error'); }
   };
@@ -79,6 +88,7 @@ export default function Dashboard() {
     try {
       await api.delete(`/lead/${leadId}`);
       setLeads(p => p.filter(l => l.id !== leadId));
+      setAllLeads(p => p.filter(l => l.id !== leadId));
       showToast('Lead deleted');
     } catch { showToast('Failed to delete lead', 'error'); }
   };
@@ -100,8 +110,9 @@ export default function Dashboard() {
     } catch { showToast('Failed to reactivate', 'error'); }
   };
 
+  // Always use allLeads for stat counts so they never reset when filtering
   const stats = STATUSES.map(s => ({
-    status: s, count: leads.filter(l => l.status === s).length, ...STATUS_META[s]
+    status: s, count: allLeads.filter(l => l.status === s).length, ...STATUS_META[s]
   }));
 
   // Staff counts for sidebar badge
@@ -129,7 +140,7 @@ export default function Dashboard() {
           )}
 
           <button className={`${styles.navItem} ${tab === 'analytics' ? styles.navActive : ''}`} onClick={() => setTab('analytics')}>
-          <Icon name="analytics" /> Analytics
+            <Icon name="analytics" /> Analytics
           </button>
         </nav>
 
@@ -156,7 +167,7 @@ export default function Dashboard() {
             <header className={styles.header}>
               <div>
                 <h1 className={styles.pageTitle}>Leads</h1>
-                <p className={styles.pageSub}>{leads.length} total leads</p>
+                <p className={styles.pageSub}>{allLeads.length} total leads</p>
               </div>
               <button className={styles.createBtn} onClick={() => setModal('lead')}>+ New Lead</button>
             </header>
@@ -171,7 +182,7 @@ export default function Dashboard() {
                 >
                   <span className={styles.statCount}>{count}</span>
                   <span className={styles.statLabel}>{label}</span>
-                  <span className={styles.statBar} style={{ width: `${leads.length ? (count / leads.length) * 100 : 0}%` }} />
+                  <span className={styles.statBar} style={{ width: `${allLeads.length ? (count / allLeads.length) * 100 : 0}%` }} />
                 </button>
               ))}
             </div>
@@ -280,7 +291,6 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Filter out admin from staff table — admin manages staff, not themselves */}
                     {staff.filter(s => s.role === 'staff').map((member) => (
                       <tr key={member.id} className={styles.row}>
                         <td className={styles.nameCell}>
@@ -294,7 +304,6 @@ export default function Dashboard() {
                             {member.is_active ? 'Active' : 'Inactive'}
                           </span>
                         </td>
-                        {/* Shows which admin created this staff account */}
                         <td className={styles.createdBy}>
                           {member.created_by_username
                             ? <span className={styles.creatorBadge}>@{member.created_by_username}</span>
@@ -320,7 +329,7 @@ export default function Dashboard() {
       </main>
 
       {/* ── Modals ── */}
-      {modal === 'lead'  && <LeadModal  onClose={() => setModal(null)} onSuccess={() => { setModal(null); fetchLeads(); showToast('Lead created!'); }} />}
+      {modal === 'lead'  && <LeadModal  onClose={() => setModal(null)} onSuccess={() => { setModal(null); fetchLeads(); fetchAllLeads(); showToast('Lead created!'); }} />}
       {modal === 'staff' && <StaffModal onClose={() => setModal(null)} onSuccess={() => { setModal(null); fetchStaff(); showToast('Staff account created!'); }} />}
 
       {/* ── Toast ── */}
@@ -374,7 +383,6 @@ function LeadModal({ onClose, onSuccess }) {
 }
 
 // ── Create Staff Modal ────────────────────────────────────────────────────────
-// Role is hardcoded to 'staff' — admin cannot create another admin from UI
 function StaffModal({ onClose, onSuccess }) {
   const [form, setForm]         = useState({ username: '', email: '', password: '', full_name: '' });
   const [showPass, setShowPass] = useState(false);
@@ -388,7 +396,6 @@ function StaffModal({ onClose, onSuccess }) {
     if (form.password.length < 8) { setError('Password must be at least 8 characters'); return; }
     setLoading(true);
     try {
-      // role is always 'staff' — no way to create admin from UI
       await api.post('/auth/register', { ...form, role: 'staff' });
       onSuccess();
     } catch (err) {
@@ -420,7 +427,6 @@ function StaffModal({ onClose, onSuccess }) {
             </button>
           </div>
         </div>
-        {/* Inform admin that this creates a staff account, not admin */}
         <p className={styles.roleNote}>
           ◈ This will create a <strong>Staff</strong> account with lead management access only.
         </p>
