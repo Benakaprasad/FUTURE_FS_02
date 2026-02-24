@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/api';
 import styles from './Dashboard.module.css';
+import Analytics from './Analytics';
 
 const STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 const SOURCES  = ['website', 'referral', 'social_media', 'walk_in', 'phone', 'other'];
@@ -127,8 +128,8 @@ export default function Dashboard() {
             </button>
           )}
 
-          <button className={styles.navItem} disabled>
-            <Icon name="analytics" /> Analytics
+          <button className={`${styles.navItem} ${tab === 'analytics' ? styles.navActive : ''}`} onClick={() => setTab('analytics')}>
+          <Icon name="analytics" /> Analytics
           </button>
         </nav>
 
@@ -315,6 +316,7 @@ export default function Dashboard() {
             </div>
           </>
         )}
+        {tab === 'analytics' && <Analytics />}
       </main>
 
       {/* ── Modals ── */}

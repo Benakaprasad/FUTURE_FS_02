@@ -1,0 +1,296 @@
+/* Analytics.module.css — matches Dashboard design system */
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  gap: 20px;
+  padding-bottom: 32px;
+}
+
+/* ── Refresh button ── */
+.refreshBtn {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+.refreshBtn:hover {
+  border-color: var(--acid);
+  color: var(--acid);
+  background: rgba(200, 241, 53, 0.05);
+}
+
+/* ── KPI Row ── */
+.kpiRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.kpiCard {
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.2s;
+}
+
+.kpiCard:hover {
+  border-color: var(--accent, var(--border-light));
+}
+
+.kpiIcon {
+  font-size: 1rem;
+  color: var(--accent, var(--text-muted));
+  margin-bottom: 4px;
+}
+
+.kpiValue {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  color: var(--accent, var(--text-primary));
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.kpiLabel {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 2px;
+}
+
+.kpiGlow {
+  position: absolute;
+  bottom: -20px;
+  right: -20px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--accent, transparent);
+  opacity: 0.07;
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+/* ── Charts Row ── */
+.chartsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── Chart Card ── */
+.chartCard {
+  padding: 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chartTitle {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+/* ── Horizontal bar list ── */
+.barList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.barLabel {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  width: 80px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barTrack {
+  flex: 1;
+  height: 6px;
+  background: var(--surface-3);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 2px;
+}
+
+.barCount {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Sparkline (7-day bar chart) ── */
+.sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 120px;
+  padding-bottom: 4px;
+}
+
+.sparkCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.sparkBarWrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sparkBar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  border: 1px solid;
+  transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 4px;
+}
+
+.sparkCount {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.sparkLabel {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Leaderboard ── */
+.leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leaderRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.leaderRank {
+  font-size: 1rem;
+  width: 20px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.leaderName {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  width: 100px;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderCount {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  width: 60px;
+  text-align: right;
+}
+
+/* ── Funnel ── */
+.funnel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.funnelStep {
+  width: 100%;
+  transition: width 0.5s ease;
+}
+
+.funnelBar {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid;
+  border-radius: var(--r-md);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.funnelLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.funnelCount {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.funnelPct {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+/* ── Scrollbar ── */
+.container::-webkit-scrollbar { width: 4px; }
+.container::-webkit-scrollbar-track { background: transparent; }
+.container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
