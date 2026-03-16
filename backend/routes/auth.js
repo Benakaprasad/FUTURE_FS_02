@@ -241,4 +241,25 @@ router.get('/me', authenticateToken, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// DELETE /api/auth/staff/:id — ADMIN ONLY
+router.delete('/staff/:id', authenticateToken, authorizeRole('admin'), async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (id === String(req.user.id))
+      return res.status(400).json({ success: false, error: 'Cannot delete your own account' });
+
+    const { rows: target } = await pool.query('SELECT role FROM users WHERE id = $1', [id]);
+    if (!target[0])
+      return res.status(404).json({ success: false, error: 'Staff member not found' });
+    if (target[0].role === 'admin')
+      return res.status(400).json({ success: false, error: 'Cannot delete the admin account' });
+
+    // Revoke sessions first
+    await pool.query('DELETE FROM refresh_tokens WHERE user_id = $1', [id]);
+    await pool.query('DELETE FROM users WHERE id = $1', [id]);
+
+    res.json({ success: true, message: 'Staff member deleted' });
+  } catch (err) { next(err); }
+});
+
 export default router;

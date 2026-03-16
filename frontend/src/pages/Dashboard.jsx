@@ -43,6 +43,17 @@ export default function Dashboard() {
     } catch { /* silent */ }
   }, []);
 
+  const handleDeleteStaff = async (staffId) => {
+  if (!confirm('Permanently delete this staff member? This cannot be undone.')) return;
+  try {
+    await api.delete(`/auth/staff/${staffId}`);
+    setStaff(p => p.filter(s => s.id !== staffId));
+    showToast('Staff member deleted');
+  } catch (err) {
+    showToast(err.response?.data?.error || 'Failed to delete', 'error');
+  }
+};
+
   const fetchLeads = useCallback(async () => {
     setLoading(true);
     try {
@@ -316,6 +327,7 @@ export default function Dashboard() {
                             ? <button className={styles.deactivateBtn} onClick={() => handleDeactivate(member.id)}>Deactivate</button>
                             : <button className={styles.reactivateBtn} onClick={() => handleReactivate(member.id)}>Reactivate</button>
                           }
+                          <button className={styles.deleteBtn} onClick={() => handleDeleteStaff(member.id)}>Delete</button>
                         </td>
                       </tr>
                     ))}

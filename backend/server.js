@@ -62,6 +62,7 @@ app.use('/api/auth', rateLimit({
     standardHeaders: true,
     legacyHeaders:   false,
     message: { success: false, error: 'Too many auth attempts, please try again later.' },
+    skip: (req) => req.path.startsWith('/staff'),  // ← add this line
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────

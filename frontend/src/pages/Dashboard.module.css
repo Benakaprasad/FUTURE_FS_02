@@ -804,3 +804,5 @@
 .roleNote strong {
   color: var(--blue);
 }
+
+.actionCell { display: flex; gap: 8px; align-items: center; }
