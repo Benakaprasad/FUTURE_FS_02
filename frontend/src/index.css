@@ -62,22 +62,27 @@ input, textarea, select { font-family: var(--font-body); }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* Utility animations */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
 @keyframes pulse-acid {
   0%, 100% { box-shadow: 0 0 0 0 var(--acid-glow); }
   50%       { box-shadow: 0 0 0 8px transparent; }
 }
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+
 @keyframes ticker {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
