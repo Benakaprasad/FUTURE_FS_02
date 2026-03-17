@@ -51,22 +51,22 @@ app.use(morgan(IS_PROD ? 'combined' : 'dev'));
 // ─────────────────────────────────────────────────────────────────────────────
 // 4. Rate Limiting
 app.use(rateLimit({
-    windowMs: 5 * 60 * 1000,
+    windowMs: 15 * 60 * 1000,
     max: 100,
     standardHeaders: true,
-    legacyHeaders:   false,
-    skip: (req) => req.path.startsWith('/api/auth'), // ← add this
+    legacyHeaders: false,
+    skip: (req) => req.originalUrl.startsWith('/api/auth'),
     message: { success: false, error: 'Too many requests, please try again later.' },
 }));
 
 app.use('/api/auth', rateLimit({
-    windowMs: 5 * 60 * 1000,
-    max: 50,
+    windowMs: 15 * 60 * 1000,  // 15 minutes
+    max: IS_PROD ? 20 : 1000,  // effectively unlimited in dev
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => req.ip, // ← now uses the real client IP
+    keyGenerator: (req) => req.ip,
     message: { success: false, error: 'Too many auth attempts, please try again later.' },
-    skip: (req) => req.path.startsWith('/staff'),
+    skip: (req) => !IS_PROD || req.path.startsWith('/staff'),
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────
