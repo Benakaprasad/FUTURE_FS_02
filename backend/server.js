@@ -49,7 +49,7 @@ app.use(morgan(IS_PROD ? 'combined' : 'dev'));
 // 4. Rate Limiting
 // ─────────────────────────────────────────────────────────────────────────────
 app.use(rateLimit({
-    windowMs: 15 * 60 * 1000,
+    windowMs: 5 * 60 * 1000,
     max: 100,
     standardHeaders: true,
     legacyHeaders:   false,
@@ -58,7 +58,7 @@ app.use(rateLimit({
 
 app.use('/api/auth', rateLimit({
     windowMs: 5 * 60 * 1000,
-    max: 10,
+    max: 50,
     standardHeaders: true,
     legacyHeaders:   false,
     message: { success: false, error: 'Too many auth attempts, please try again later.' },

@@ -465,6 +465,10 @@
   cursor: pointer;
   margin-top: 4px;
 }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 
 .loadingSpinner {
   width: 28px;
