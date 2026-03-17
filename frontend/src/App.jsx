@@ -7,21 +7,16 @@ import Dashboard from './pages/Dashboard';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
+    <AuthProvider>        {/* ← moved outside BrowserRouter is fine, but outside Routes is critical */}
+      <BrowserRouter>
         <Routes>
-          {/* Public — login only, no register */}
           <Route path="/login" element={<LoginPage />} />
-
-          {/* Protected — any authenticated staff or admin */}
           <Route path="/dashboard" element={
             <ProtectedRoute><Dashboard /></ProtectedRoute>
           } />
-
-          {/* Catch all → login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
