@@ -21,6 +21,7 @@ const IS_PROD    = process.env.NODE_ENV   === 'production';
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 const app = express();
+app.set('trust proxy', 1);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Security Headers
@@ -60,9 +61,10 @@ app.use('/api/auth', rateLimit({
     windowMs: 5 * 60 * 1000,
     max: 50,
     standardHeaders: true,
-    legacyHeaders:   false,
+    legacyHeaders: false,
+    keyGenerator: (req) => req.ip, // ← now uses the real client IP
     message: { success: false, error: 'Too many auth attempts, please try again later.' },
-    skip: (req) => req.path.startsWith('/staff'),  // ← add this line
+    skip: (req) => req.path.startsWith('/staff'),
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────
