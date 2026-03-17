@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/api';
 import styles from './Dashboard.module.css';
 import Analytics from './Analytics';
+import { useConfirm } from './Confirmmodal';   // ← import the hook
 
 const STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 const SOURCES  = ['website', 'referral', 'social_media', 'walk_in', 'phone', 'other'];
@@ -19,6 +20,7 @@ const STATUS_META = {
 export default function Dashboard() {
   const { user, logout }          = useAuth();
   const navigate                  = useNavigate();
+  const { confirm, ConfirmModal } = useConfirm();   // ← hook
   const [tab, setTab]             = useState('leads');
   const [leads, setLeads]         = useState([]);
   const [allLeads, setAllLeads]   = useState([]);
@@ -43,16 +45,23 @@ export default function Dashboard() {
     } catch { /* silent */ }
   }, []);
 
+  // ── Delete staff — confirm() replaces confirm() ───────────────────────────
   const handleDeleteStaff = async (staffId) => {
-  if (!confirm('Permanently delete this staff member? This cannot be undone.')) return;
-  try {
-    await api.delete(`/auth/staff/${staffId}`);
-    setStaff(p => p.filter(s => s.id !== staffId));
-    showToast('Staff member deleted');
-  } catch (err) {
-    showToast(err.response?.data?.error || 'Failed to delete', 'error');
-  }
-};
+    const ok = await confirm({
+      title:   'Delete Staff Member',
+      message: 'This will permanently remove their account and cannot be undone.',
+      label:   'Delete',
+      danger:  true,
+    });
+    if (!ok) return;
+    try {
+      await api.delete(`/auth/staff/${staffId}`);
+      setStaff(p => p.filter(s => s.id !== staffId));
+      showToast('Staff member deleted');
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Failed to delete', 'error');
+    }
+  };
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -94,8 +103,15 @@ export default function Dashboard() {
     } catch { showToast('Failed to update status', 'error'); }
   };
 
+  // ── Delete lead ───────────────────────────────────────────────────────────
   const handleDeleteLead = async (leadId) => {
-    if (!confirm('Delete this lead?')) return;
+    const ok = await confirm({
+      title:   'Delete Lead',
+      message: 'This lead will be permanently removed.',
+      label:   'Delete',
+      danger:  true,
+    });
+    if (!ok) return;
     try {
       await api.delete(`/lead/${leadId}`);
       setLeads(p => p.filter(l => l.id !== leadId));
@@ -104,8 +120,15 @@ export default function Dashboard() {
     } catch { showToast('Failed to delete lead', 'error'); }
   };
 
+  // ── Deactivate staff ──────────────────────────────────────────────────────
   const handleDeactivate = async (staffId) => {
-    if (!confirm('Deactivate this staff member? They will be logged out immediately.')) return;
+    const ok = await confirm({
+      title:   'Deactivate Staff Member',
+      message: 'They will be signed out immediately and lose access to the dashboard.',
+      label:   'Deactivate',
+      danger:  true,
+    });
+    if (!ok) return;
     try {
       await api.patch(`/auth/staff/${staffId}/deactivate`);
       setStaff(p => p.map(s => s.id === staffId ? { ...s, is_active: false } : s));
@@ -121,16 +144,18 @@ export default function Dashboard() {
     } catch { showToast('Failed to reactivate', 'error'); }
   };
 
-  // Always use allLeads for stat counts so they never reset when filtering
   const stats = STATUSES.map(s => ({
     status: s, count: allLeads.filter(l => l.status === s).length, ...STATUS_META[s]
   }));
 
-  // Staff counts for sidebar badge
   const activeStaffCount = staff.filter(s => s.is_active && s.role === 'staff').length;
 
   return (
     <div className={styles.root}>
+
+      {/* ── Confirm modal — renders on top of everything ── */}
+      <ConfirmModal />
+
       {/* ── Sidebar ── */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarLogo}>
@@ -201,7 +226,12 @@ export default function Dashboard() {
             <div className={styles.toolbar}>
               <div className={styles.searchWrap}>
                 <Icon name="search" />
-                <input className={styles.searchInput} placeholder="Search by name or email…" value={search} onChange={e => setSearch(e.target.value)} />
+                <input
+                  className={styles.searchInput}
+                  placeholder="Search by name or email…"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
                 {search && <button className={styles.clearBtn} onClick={() => setSearch('')}>×</button>}
               </div>
               {filterStatus && (
@@ -213,7 +243,10 @@ export default function Dashboard() {
 
             <div className={styles.tableWrap}>
               {loading ? (
-                <div className={styles.empty}><div className={styles.loadingSpinner} /><span>Loading leads…</span></div>
+                <div className={styles.empty}>
+                  <div className={styles.loadingSpinner} />
+                  <span>Loading leads…</span>
+                </div>
               ) : leads.length === 0 ? (
                 <div className={styles.empty}>
                   <span className={styles.emptyIcon}>◎</span>
@@ -224,14 +257,9 @@ export default function Dashboard() {
                 <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th>Name</th>
-                      <th>Email</th>
-                      <th>Phone</th>
-                      <th>Source</th>
-                      <th>Status</th>
-                      <th>Added by</th>
-                      <th>Date</th>
-                      {isAdmin && <th>Actions</th>}
+                      <th>Name</th><th>Email</th><th>Phone</th>
+                      <th>Source</th><th>Status</th><th>Added by</th>
+                      <th>Date</th>{isAdmin && <th>Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -257,7 +285,9 @@ export default function Dashboard() {
                         <td className={styles.createdBy}>{lead.created_by_username || '—'}</td>
                         <td className={styles.dateCell}>{new Date(lead.created_at).toLocaleDateString()}</td>
                         {isAdmin && (
-                          <td><button className={styles.deleteBtn} onClick={() => handleDeleteLead(lead.id)}>Delete</button></td>
+                          <td>
+                            <button className={styles.deleteBtn} onClick={() => handleDeleteLead(lead.id)}>Delete</button>
+                          </td>
                         )}
                       </tr>
                     ))}
@@ -281,7 +311,10 @@ export default function Dashboard() {
 
             <div className={styles.tableWrap}>
               {loading ? (
-                <div className={styles.empty}><div className={styles.loadingSpinner} /><span>Loading staff…</span></div>
+                <div className={styles.empty}>
+                  <div className={styles.loadingSpinner} />
+                  <span>Loading staff…</span>
+                </div>
               ) : staff.filter(s => s.role === 'staff').length === 0 ? (
                 <div className={styles.empty}>
                   <span className={styles.emptyIcon}>◉</span>
@@ -292,13 +325,8 @@ export default function Dashboard() {
                 <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th>Name</th>
-                      <th>Username</th>
-                      <th>Email</th>
-                      <th>Status</th>
-                      <th>Created by</th>
-                      <th>Joined</th>
-                      <th>Actions</th>
+                      <th>Name</th><th>Username</th><th>Email</th>
+                      <th>Status</th><th>Created by</th><th>Joined</th><th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -318,11 +346,10 @@ export default function Dashboard() {
                         <td className={styles.createdBy}>
                           {member.created_by_username
                             ? <span className={styles.creatorBadge}>@{member.created_by_username}</span>
-                            : '—'
-                          }
+                            : '—'}
                         </td>
                         <td className={styles.dateCell}>{new Date(member.created_at).toLocaleDateString()}</td>
-                        <td>
+                        <td className={styles.actionCell}>
                           {member.is_active
                             ? <button className={styles.deactivateBtn} onClick={() => handleDeactivate(member.id)}>Deactivate</button>
                             : <button className={styles.reactivateBtn} onClick={() => handleReactivate(member.id)}>Reactivate</button>
@@ -337,6 +364,7 @@ export default function Dashboard() {
             </div>
           </>
         )}
+
         {tab === 'analytics' && <Analytics />}
       </main>
 
@@ -374,7 +402,7 @@ function LeadModal({ onClose, onSuccess }) {
       <form onSubmit={submit} className={styles.modalForm}>
         <div className={styles.modalGrid}>
           <MField label="Name *"  type="text"  value={form.name}  onChange={set('name')}  placeholder="Full name"       required />
-          <MField label="Email *" type="email" value={form.email} onChange={set('email')} placeholder="email@gym.com"  required />
+          <MField label="Email *" type="email" value={form.email} onChange={set('email')} placeholder="email@gym.com"   required />
           <MField label="Phone"   type="tel"   value={form.phone} onChange={set('phone')} placeholder="+91 98765 43210" />
           <div className={styles.mField}>
             <label className={styles.mLabel}>Source</label>
