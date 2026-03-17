@@ -49,11 +49,13 @@ app.use(morgan(IS_PROD ? 'combined' : 'dev'));
 // ─────────────────────────────────────────────────────────────────────────────
 // 4. Rate Limiting
 // ─────────────────────────────────────────────────────────────────────────────
+// 4. Rate Limiting
 app.use(rateLimit({
     windowMs: 5 * 60 * 1000,
     max: 100,
     standardHeaders: true,
     legacyHeaders:   false,
+    skip: (req) => req.path.startsWith('/api/auth'), // ← add this
     message: { success: false, error: 'Too many requests, please try again later.' },
 }));
 

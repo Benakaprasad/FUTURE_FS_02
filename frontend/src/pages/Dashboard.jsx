@@ -20,7 +20,7 @@ const STATUS_META = {
 export default function Dashboard() {
   const { user, logout }          = useAuth();
   const navigate                  = useNavigate();
-  const { confirm, ConfirmModal } = useConfirm();   // ← hook
+  const { confirm, modal: confirmModal } = useConfirm();   // ← hook
   const [tab, setTab]             = useState('leads');
   const [leads, setLeads]         = useState([]);
   const [allLeads, setAllLeads]   = useState([]);
@@ -28,7 +28,7 @@ export default function Dashboard() {
   const [loading, setLoading]     = useState(true);
   const [search, setSearch]       = useState('');
   const [filterStatus, setFilter] = useState('');
-  const [modal, setModal]         = useState(null);
+  const [modal, setModal] = useState(null);
   const [toast, setToast]         = useState(null);
 
   const isAdmin = user?.role === 'admin';
@@ -154,7 +154,7 @@ export default function Dashboard() {
     <div className={styles.root}>
 
       {/* ── Confirm modal — renders on top of everything ── */}
-      <ConfirmModal />
+      {confirmModal}
 
       {/* ── Sidebar ── */}
       <aside className={styles.sidebar}>
