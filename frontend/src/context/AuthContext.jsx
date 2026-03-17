@@ -7,14 +7,14 @@ export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session on mount
   useEffect(() => {
-    const token = sessionStorage.getItem('accessToken');
-    if (!token) { setLoading(false); return; }
-
     api.get('/auth/me')
       .then(({ data }) => setUser(data.user))
-      .catch(() => sessionStorage.removeItem('accessToken'))
+      .catch(() => {
+        // /me failed AND refresh failed — genuinely not logged in
+        sessionStorage.removeItem('accessToken');
+        setUser(null);
+      })
       .finally(() => setLoading(false));
   }, []);
 

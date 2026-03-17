@@ -1,15 +1,19 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import styles from './Auth.module.css';
 
 export default function LoginPage() {
-  const [form, setForm]           = useState({ email: '', password: '' });
-  const [showPassword, setShow]   = useState(false);
-  const [error, setError]         = useState('');
-  const [loading, setLoading]     = useState(false);
-  const { login }                 = useAuth();
-  const navigate                  = useNavigate();
+  const [form, setForm]         = useState({ email: '', password: '' });
+  const [showPassword, setShow] = useState(false);
+  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(false);
+  const { login, user, loading: authLoading } = useAuth();
+  const navigate                = useNavigate();
+
+  // Already logged in or still checking — don't show login form
+  if (authLoading) return null;
+  if (user) return <Navigate to="/dashboard" replace />;
 
   const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
 
@@ -73,7 +77,6 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={submit} className={styles.form}>
-            {/* Email */}
             <div className={styles.field}>
               <label className={styles.label}>Email</label>
               <input
@@ -87,7 +90,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Password with show/hide */}
             <div className={styles.field}>
               <label className={styles.label}>Password</label>
               <div className={styles.passwordWrap}>
