@@ -5,6 +5,7 @@ import AdminRoute from './components/AdminRoute';
 import LoginPage from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 
+
 export default function App() {
   return (
     <AuthProvider>        {/* ← moved outside BrowserRouter is fine, but outside Routes is critical */}

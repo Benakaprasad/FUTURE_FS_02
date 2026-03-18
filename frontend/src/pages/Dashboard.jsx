@@ -88,9 +88,10 @@ export default function Dashboard() {
   }, [isAdmin]);
 
   useEffect(() => {
-    if (tab === 'leads') { fetchLeads(); fetchAllLeads(); }
-    if (tab === 'staff') fetchStaff();
-  }, [tab, fetchLeads, fetchStaff, fetchAllLeads]);
+  if (!user) return;   // ← add this
+  if (tab === 'leads') { fetchLeads(); fetchAllLeads(); }
+  if (tab === 'staff') fetchStaff();
+}, [tab, user, fetchLeads, fetchStaff, fetchAllLeads]);  // ← add user to deps
 
   const handleLogout = async () => { await logout(); navigate('/login'); };
 

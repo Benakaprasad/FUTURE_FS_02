@@ -22,6 +22,7 @@ const SOURCE_COLORS = {
 };
 
 export default function Analytics() {
+  const { user } = useAuth();
   const [leads, setLeads]     = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
@@ -38,7 +39,10 @@ export default function Analytics() {
     }
   }, []);
 
-  useEffect(() => { fetchLeads(); }, [fetchLeads]);
+ useEffect(() => {
+  if (!user) return;   
+  fetchLeads();
+}, [user, fetchLeads]);
 
   if (loading) return (
     <div className={styles.empty}>
