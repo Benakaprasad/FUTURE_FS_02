@@ -48,8 +48,7 @@ app.use(morgan(IS_PROD ? 'combined' : 'dev'));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 4. Rate Limiting
-// ─────────────────────────────────────────────────────────────────────────────
-// 4. Rate Limiting
+// ────────────────────────────────────────────────────────────────────────────
 app.use(rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -60,13 +59,18 @@ app.use(rateLimit({
 }));
 
 app.use('/api/auth', rateLimit({
-    windowMs: 15 * 60 * 1000,  // 15 minutes
-    max: IS_PROD ? 20 : 1000,  // effectively unlimited in dev
-    standardHeaders: true,
-    legacyHeaders: false,
-    keyGenerator: (req) => req.ip,
-    message: { success: false, error: 'Too many auth attempts, please try again later.' },
-    skip: (req) => !IS_PROD || req.path.startsWith('/staff'),
+  windowMs: 15 * 60 * 1000,
+  max: IS_PROD ? 20 : 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip,
+  message: { success: false, error: 'Too many auth attempts, please try again later.' },
+  // Only rate-limit actual auth actions, not session-check endpoints
+  skip: (req) => !IS_PROD 
+    || req.path.startsWith('/staff')
+    || req.path === '/me'        // ← add
+    || req.path === '/refresh'   // ← add
+    || req.path === '/logout',   // ← add
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────

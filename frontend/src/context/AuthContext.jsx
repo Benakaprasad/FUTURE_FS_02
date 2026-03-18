@@ -9,26 +9,33 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
   const fetchMe = async () => {
-    const delays = [2000, 4000, 8000]; // retry at 2s, 4s, 8s
+    // If no token in session, try a silent refresh FIRST
+    // instead of letting /auth/me fail → interceptor → refresh → retry
+    const existingToken = sessionStorage.getItem('accessToken');
     
-    for (let attempt = 0; attempt <= delays.length; attempt++) {
+    if (!existingToken) {
+      // Try to get a new access token silently via refresh cookie
       try {
-        const { data } = await api.get('/auth/me');
-        setUser(data.user);
-        setLoading(false);
-        return; // ← success, stop retrying
-      } catch (err) {
-        if (err.response?.status === 429 && attempt < delays.length) {
-          // Wait then retry
-          await new Promise(res => setTimeout(res, delays[attempt]));
-          continue;
-        }
-        // Either not a 429, or ran out of retries
-        sessionStorage.removeItem('accessToken');
+        const { data } = await api.post('/auth/refresh');
+        sessionStorage.setItem('accessToken', data.accessToken);
+      } catch {
+        // No valid refresh cookie → user is logged out, stop here
         setUser(null);
         setLoading(false);
         return;
       }
+    }
+
+    // Now we definitely have a token — call /auth/me exactly once
+    try {
+      // In AuthContext, mark the initial /auth/me so interceptor won't double-retry it
+    const { data } = await api.get('/auth/me', { _isAuthInit: true });
+      setUser(data.user);
+    } catch {
+      sessionStorage.removeItem('accessToken');
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 

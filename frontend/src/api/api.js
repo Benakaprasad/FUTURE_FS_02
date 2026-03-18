@@ -28,6 +28,7 @@ api.interceptors.response.use(
     const original = error.config;
 
     if (error.response?.status === 401 && !original._retry) {
+      if (original._isAuthInit) return Promise.reject(error);
       if (refreshing) {
         return new Promise((resolve, reject) => {
           queue.push({ resolve, reject });
