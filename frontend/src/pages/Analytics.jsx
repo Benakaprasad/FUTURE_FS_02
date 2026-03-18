@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../api/api';
+import { useAuth } from '../context/AuthContext';
 import styles from './Dashboard.module.css';
 import aStyles from './Analytics.module.css';
 
