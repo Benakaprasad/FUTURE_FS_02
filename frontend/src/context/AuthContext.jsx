@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import api from '../api/api';
 
 const AuthContext = createContext(null);
@@ -6,52 +6,39 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null);
   const [loading, setLoading] = useState(true);
+  const initDone              = useRef(false);   // StrictMode guard
 
   useEffect(() => {
-  const fetchMe = async () => {
-    // If no token in session, try a silent refresh FIRST
-    // instead of letting /auth/me fail → interceptor → refresh → retry
-    const existingToken = sessionStorage.getItem('accessToken');
-    
-    if (!existingToken) {
-      // Try to get a new access token silently via refresh cookie
+    if (initDone.current) return;   // prevent double-fire in React StrictMode
+    initDone.current = true;
+
+    const init = async () => {
       try {
-        const { data } = await api.post('/auth/refresh');
-        sessionStorage.setItem('accessToken', data.accessToken);
+        // Step 1: try to get a fresh access token using the httpOnly refresh cookie.
+        // This is the KEY step — it runs even if sessionStorage is empty.
+        const { data: refreshData } = await api.post('/auth/refresh');
+        sessionStorage.setItem('accessToken', refreshData.accessToken);
+
+        // Step 2: now fetch the user profile with the fresh token
+        const { data: meData } = await api.get('/auth/me');
+        setUser(meData.user);
       } catch {
-        // No valid refresh cookie → user is logged out, stop here
+        // Refresh cookie missing/expired → genuinely logged out
+        sessionStorage.removeItem('accessToken');
         setUser(null);
+      } finally {
         setLoading(false);
-        return;
       }
-    }
+    };
 
-    // Now we definitely have a token — call /auth/me exactly once
-    try {
-      // In AuthContext, mark the initial /auth/me so interceptor won't double-retry it
-    const { data } = await api.get('/auth/me', { _isAuthInit: true });
-      setUser(data.user);
-    } catch {
-      sessionStorage.removeItem('accessToken');
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchMe();
-}, []);
+    init();
+  }, []);
 
   const login = useCallback(async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });
     sessionStorage.setItem('accessToken', data.accessToken);
     setUser(data.user);
     return data.user;
-  }, []);
-
-  const register = useCallback(async (payload) => {
-    const { data } = await api.post('/auth/register', payload);
-    return data;
   }, []);
 
   const logout = useCallback(async () => {
@@ -61,16 +48,14 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// In AuthContext.jsx — make sure useAuth has a fallback
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };
-
