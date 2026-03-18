@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
 import styles from './Dashboard.module.css';
 
 const ConfirmModal = ({ state, onConfirm, onCancel }) => {

@@ -1,10 +1,9 @@
 import './env.js';
-
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import express      from 'express';
 import cors         from 'cors';
 import helmet       from 'helmet';
 import morgan       from 'morgan';
-import rateLimit    from 'express-rate-limit';
 import hpp          from 'hpp';
 import cookieParser from 'cookie-parser';
 import xss          from 'xss-clean';
@@ -63,7 +62,7 @@ app.use('/api/auth', rateLimit({
   max: IS_PROD ? 20 : 1000,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip,
+ keyGenerator: (req) => ipKeyGenerator(req),
   message: { success: false, error: 'Too many auth attempts, please try again later.' },
   // Only rate-limit actual auth actions, not session-check endpoints
   skip: (req) => !IS_PROD 
