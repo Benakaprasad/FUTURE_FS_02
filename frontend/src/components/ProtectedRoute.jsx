@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
 
-  // Still checking auth — show spinner, never redirect yet
   if (loading) {
     return (
       <div style={{
@@ -23,6 +22,5 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  // Auth check done — now decide
   return user ? children : <Navigate to="/login" replace />;
 }

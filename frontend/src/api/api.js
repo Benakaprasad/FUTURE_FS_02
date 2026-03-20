@@ -2,18 +2,16 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
-  withCredentials: true,          // send httpOnly cookie automatically
+  withCredentials: true,         
   headers: { 'Content-Type': 'application/json' },
 });
 
-// ── Attach access token to every request ─────────────────────────────────────
 api.interceptors.request.use((config) => {
   const token = sessionStorage.getItem('accessToken');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// ── Auto-refresh on 401 ───────────────────────────────────────────────────────
 let refreshing = false;
 let queue = [];
 

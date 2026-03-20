@@ -11,7 +11,6 @@ export default function LoginPage() {
   const { login, user, loading: authLoading } = useAuth();
   const navigate                = useNavigate();
 
-  // Already logged in or still checking — don't show login form
   if (authLoading) return null;
   if (user) return <Navigate to="/dashboard" replace />;
 

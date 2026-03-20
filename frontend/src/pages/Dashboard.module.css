@@ -653,7 +653,6 @@
   border: 1px solid var(--red);
   color: var(--red);
 }
-/* ── Copy everything from existing Dashboard.module.css and ADD these ── */
 
 /* Role badges */
 .roleBadge {
@@ -780,9 +779,7 @@
   transition: color 0.15s;
 }
 .mEyeBtn:hover { color: var(--text-primary); }
-/* Add these to the bottom of your Dashboard.module.css */
 
-/* "Created by" badge in staff table */
 .creatorBadge {
   display: inline-flex;
   padding: 2px 8px;
@@ -794,7 +791,6 @@
   font-family: var(--font-mono);
 }
 
-/* Note inside staff modal explaining role */
 .roleNote {
   font-size: 0.78rem;
   color: var(--text-muted);

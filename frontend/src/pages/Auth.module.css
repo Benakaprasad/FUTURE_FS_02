@@ -6,7 +6,6 @@
   background: var(--black);
 }
 
-/* ── Left panel ─────────────────────────────────────────────────────────── */
 .left {
   position: relative;
   width: 52%;
@@ -140,7 +139,6 @@
   text-transform: uppercase;
 }
 
-/* ── Right panel ─────────────────────────────────────────────────────────── */
 .right {
   flex: 1;
   display: flex;
@@ -158,7 +156,6 @@
 
 .formHeader { margin-bottom: 32px; }
 
-/* Access badge — makes it clear this is internal only */
 .accessBadge {
   display: inline-flex;
   align-items: center;
@@ -314,7 +311,7 @@
   animation: spin 0.7s linear infinite;
   display: inline-block;
 }
-/* Bottom hint — replaces the register toggle */
+
 .hint {
   text-align: center;
   font-size: 0.8rem;
@@ -324,7 +321,6 @@
   border-top: 1px solid var(--border);
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .root { flex-direction: column; }
   .left { width: 100%; min-height: 200px; }

@@ -2,7 +2,6 @@ import pool from '../config/database.js';
 
 const getAllLeads = async () => {
   const { rows } = await pool.query(
-    // Join users table to show which staff member created the lead
     `SELECT l.*, u.username AS created_by_username
      FROM leads l
      LEFT JOIN users u ON l.created_by = u.id

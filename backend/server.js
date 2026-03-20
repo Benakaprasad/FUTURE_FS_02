@@ -12,9 +12,7 @@ import './jobs/cleanupTokens.js';
 import authRoutes   from './routes/auth.js';
 import leadRoutes   from './routes/lead.js';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
+
 const PORT       = process.env.PORT       || 3000;
 const IS_PROD    = process.env.NODE_ENV   === 'production';
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -22,17 +20,11 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const app = express();
 app.set('trust proxy', 1);
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 1. Security Headers
-// ─────────────────────────────────────────────────────────────────────────────
 app.use(helmet({
     contentSecurityPolicy:    IS_PROD,
     crossOriginEmbedderPolicy: IS_PROD,
 }));
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 2. CORS — credentials:true required for httpOnly cookie to be sent
-// ─────────────────────────────────────────────────────────────────────────────
 app.use(cors({
     origin:         CLIENT_URL,
     methods:        ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
@@ -40,14 +32,8 @@ app.use(cors({
     credentials:    true,
 }));
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 3. Logging
-// ─────────────────────────────────────────────────────────────────────────────
 app.use(morgan(IS_PROD ? 'combined' : 'dev'));
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 4. Rate Limiting
-// ────────────────────────────────────────────────────────────────────────────
 app.use(rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -64,30 +50,20 @@ app.use('/api/auth', rateLimit({
   legacyHeaders: false,
  keyGenerator: (req) => ipKeyGenerator(req),
   message: { success: false, error: 'Too many auth attempts, please try again later.' },
-  // Only rate-limit actual auth actions, not session-check endpoints
   skip: (req) => !IS_PROD 
     || req.path.startsWith('/staff')
-    || req.path === '/me'        // ← add
-    || req.path === '/refresh'   // ← add
-    || req.path === '/logout',   // ← add
+    || req.path === '/me'        
+    || req.path === '/refresh'   
+    || req.path === '/logout',   
 }));
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 5. Body Parsing — MUST come before xss() and hpp()
-// ─────────────────────────────────────────────────────────────────────────────
+
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 6. Input Sanitization — runs after body is parsed
-// ─────────────────────────────────────────────────────────────────────────────
 app.use(xss());
 app.use(hpp());
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 7. Health Check
-// ─────────────────────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
     res.status(200).json({
         success:     true,
@@ -97,15 +73,11 @@ app.get('/health', (_req, res) => {
     });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 8. Routes
-// ─────────────────────────────────────────────────────────────────────────────
+//loading routes
 app.use('/api/auth', authRoutes);
 app.use('/api/lead', leadRoutes);
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 9. 404 — Unknown routes
-// ─────────────────────────────────────────────────────────────────────────────
+
 app.use((req, res) => {
     res.status(404).json({
         success: false,
@@ -113,10 +85,7 @@ app.use((req, res) => {
     });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 10. Global Error Handler — all next(err) calls land here
-// ─────────────────────────────────────────────────────────────────────────────
-app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+app.use((err, req, res, next) => { 
     const statusCode = err.statusCode || err.status || 500;
 
     console.error(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`, {
@@ -134,14 +103,9 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
     });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 11. Start
-// ─────────────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-    console.log('─────────────────────────────────────────');
     console.log('  FitZone Gym CRM');
     console.log(`  ENV  : ${process.env.NODE_ENV || 'development'}`);
     console.log(`  PORT : ${PORT}`);
     console.log(`  API  : http://localhost:${PORT}/api`);
-    console.log('─────────────────────────────────────────');
 });

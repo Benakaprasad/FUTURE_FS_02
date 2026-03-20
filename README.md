@@ -136,47 +136,63 @@ Theft detection (token rotation)
 ## Project Structure
 
 ```
-FUTURE_FS_02/
-├── backend/
-│   ├── config/
-│   │   └── database.js          # PostgreSQL pool with SSL support
-│   ├── jobs/
-│   │   └── cleanupTokens.js     # cron job — deletes expired tokens daily
-│   ├── middleware/
-│   │   ├── auth.js              # JWT verification → populates req.user
-│   │   └── role.js              # role-based access control
-│   ├── models/
-│   │   ├── User.js              # user DB queries
-│   │   └── Lead.js              # lead DB queries (with created_by join)
-│   ├── routes/
-│   │   ├── auth.js              # login, register (admin only), staff management
-│   │   └── lead.js              # full lead CRUD + search + filter
-│   ├── env.js                   # validates required env vars on startup
-│   ├── migrate.js               # runs migration.sql against DB
-│   ├── migration.sql            # full schema — tables, enums, indexes, triggers
-│   ├── server.js                # express app entry point
-│   ├── xss-clean.d.ts           # TS declaration for xss-clean (no @types package)
-│   └── package.json
-│
-├── frontend/
-│   └── src/
-│       ├── api/
-│       │   └── api.js           # axios instance with auto token refresh interceptor
-│       ├── components/
-│       │   ├── ProtectedRoute.jsx  # redirects to /login if not authenticated
-│       │   └── AdminRoute.jsx      # redirects to /dashboard if not admin
-│       ├── context/
-│       │   └── AuthContext.jsx  # global user state, login/logout/register
-│       ├── pages/
-│       │   ├── Auth.jsx         # login page (staff & admin only, no public register)
-│       │   ├── Auth.module.css
-│       │   ├── Dashboard.jsx    # leads tab + staff tab (admin only)
-│       │   └── Dashboard.module.css
-│       ├── App.jsx              # routing
-│       ├── main.jsx
-│       └── index.css            # CSS variables, fonts, global styles
-│
-└── README.md
+FUTURE_FS_02
+├─ backend
+│  ├─ .env
+│  ├─ .env.production
+│  ├─ config
+│  │  └─ database.js
+│  ├─ env.js
+│  ├─ jobs
+│  │  └─ cleanupTokens.js
+│  ├─ middleware
+│  │  ├─ auth.js
+│  │  └─ role.js
+│  ├─ migrate.js
+│  ├─ migration.sql
+│  ├─ models
+│  │  ├─ Lead.js
+│  │  └─ User.js
+│  ├─ package-lock.json
+│  ├─ package.json
+│  ├─ routes
+│  │  ├─ auth.js
+│  │  └─ lead.js
+│  ├─ server.js
+│  └─ xss-clean.d.ts
+├─ frontend
+│  ├─ .env
+│  ├─ .env.production
+│  ├─ eslint.config.js
+│  ├─ index.html
+│  ├─ package-lock.json
+│  ├─ package.json
+│  ├─ public
+│  │  └─ _redirects
+│  ├─ README.md
+│  ├─ src
+│  │  ├─ api
+│  │  │  └─ api.js
+│  │  ├─ App.jsx
+│  │  ├─ components
+│  │  │  ├─ AdminRoute.jsx
+│  │  │  └─ ProtectedRoute.jsx
+│  │  ├─ context
+│  │  │  └─ AuthContext.jsx
+│  │  ├─ index.css
+│  │  ├─ main.jsx
+│  │  └─ pages
+│  │     ├─ Analytics.jsx
+│  │     ├─ Analytics.module.css
+│  │     ├─ Auth.jsx
+│  │     ├─ Auth.module.css
+│  │     ├─ Confirmmodal.jsx
+│  │     ├─ Dashboard.jsx
+│  │     └─ Dashboard.module.css
+│  └─ vite.config.js
+├─ README.md
+└─ render.yaml
+
 ```
 
 ---
@@ -335,5 +351,3 @@ DELETE /api/lead/:id                      admin only
 
 GET    /health                            public
 ```
-
-

@@ -57,33 +57,27 @@ export default function Analytics() {
     </div>
   );
 
-  // ── Computed stats ──────────────────────────────────────────────────────────
   const total = leads.length;
 
-  // Status breakdown
   const statusCounts = Object.keys(STATUS_META).reduce((acc, s) => {
     acc[s] = leads.filter(l => l.status === s).length;
     return acc;
   }, {});
 
-  // Source breakdown
   const sourceCounts = leads.reduce((acc, l) => {
     const src = l.source || 'other';
     acc[src] = (acc[src] || 0) + 1;
     return acc;
   }, {});
 
-  // Conversion rate
   const conversionRate = total > 0
     ? ((statusCounts.converted / total) * 100).toFixed(1)
     : '0.0';
 
-  // Loss rate
   const lossRate = total > 0
     ? ((statusCounts.lost / total) * 100).toFixed(1)
     : '0.0';
 
-  // Leads over time (last 7 days)
   const now = new Date();
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(now);
@@ -101,7 +95,6 @@ export default function Analytics() {
 
   const maxDaily = Math.max(...dailyCounts.map(d => d.count), 1);
 
-  // Top staff by leads created
   const staffLeads = leads.reduce((acc, l) => {
     const name = l.created_by_username || 'Unknown';
     acc[name] = (acc[name] || 0) + 1;

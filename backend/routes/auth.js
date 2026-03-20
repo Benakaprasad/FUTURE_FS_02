@@ -9,7 +9,6 @@ import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 const generateAccessToken = (user) =>
   jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
 
@@ -24,9 +23,6 @@ const setRefreshCookie = (res, token) =>
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// POST /api/auth/login — public
-// ─────────────────────────────────────────────────────────────────────────────
 router.post('/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -62,10 +58,6 @@ router.post('/login', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// POST /api/auth/register — ADMIN ONLY
-// Creates staff accounts. Admin role is blocked — only ONE admin can exist.
-// ─────────────────────────────────────────────────────────────────────────────
 router.post('/register', authenticateToken, authorizeRole('admin'), async (req, res, next) => {
   try {
     const { username, email, password, full_name, role = 'staff' } = req.body;
@@ -80,7 +72,6 @@ router.post('/register', authenticateToken, authorizeRole('admin'), async (req, 
     if (password.length < 8)
       return res.status(400).json({ success: false, error: 'Password must be at least 8 characters' });
 
-    // ── Block creating a second admin ─────────────────────────────────────────
     if (role === 'admin') {
       return res.status(400).json({
         success: false,
@@ -88,7 +79,6 @@ router.post('/register', authenticateToken, authorizeRole('admin'), async (req, 
       });
     }
 
-    // ── Only staff role allowed through this endpoint ─────────────────────────
     if (role !== 'staff')
       return res.status(400).json({ success: false, error: 'Invalid role. Only staff accounts can be created.' });
 
@@ -98,7 +88,6 @@ router.post('/register', authenticateToken, authorizeRole('admin'), async (req, 
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Pass req.user.id as created_by — links staff to the admin who created them
     const user = await createUser(username, email, hashedPassword, 'staff', full_name, null, req.user.id);
 
     res.status(201).json({
@@ -109,9 +98,6 @@ router.post('/register', authenticateToken, authorizeRole('admin'), async (req, 
   } catch (err) { next(err); }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GET /api/auth/staff — ADMIN ONLY (list all staff with creator info)
-// ─────────────────────────────────────────────────────────────────────────────
 router.get('/staff', authenticateToken, authorizeRole('admin'), async (req, res, next) => {
   try {
     const { rows } = await pool.query(
@@ -127,9 +113,6 @@ router.get('/staff', authenticateToken, authorizeRole('admin'), async (req, res,
   } catch (err) { next(err); }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PATCH /api/auth/staff/:id/deactivate — ADMIN ONLY
-// ─────────────────────────────────────────────────────────────────────────────
 router.patch('/staff/:id/deactivate', authenticateToken, authorizeRole('admin'), async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -137,7 +120,6 @@ router.patch('/staff/:id/deactivate', authenticateToken, authorizeRole('admin'),
     if (id === req.user.id)
       return res.status(400).json({ success: false, error: 'Cannot deactivate your own account' });
 
-    // Block deactivating the admin account
     const { rows: target } = await pool.query(`SELECT role FROM users WHERE id = $1`, [id]);
     if (!target[0])
       return res.status(404).json({ success: false, error: 'Staff member not found' });
@@ -148,16 +130,12 @@ router.patch('/staff/:id/deactivate', authenticateToken, authorizeRole('admin'),
       `UPDATE users SET is_active = false WHERE id = $1 RETURNING id, username, is_active`, [id]
     );
 
-    // Kick them out immediately by revoking all their tokens
     await pool.query(`DELETE FROM refresh_tokens WHERE user_id = $1`, [id]);
 
     res.json({ success: true, message: 'Staff member deactivated', user: rows[0] });
   } catch (err) { next(err); }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PATCH /api/auth/staff/:id/reactivate — ADMIN ONLY
-// ─────────────────────────────────────────────────────────────────────────────
 router.patch('/staff/:id/reactivate', authenticateToken, authorizeRole('admin'), async (req, res, next) => {
   try {
     const { rows } = await pool.query(
@@ -170,9 +148,6 @@ router.patch('/staff/:id/reactivate', authenticateToken, authorizeRole('admin'),
   } catch (err) { next(err); }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// POST /api/auth/refresh — silent token rotation
-// ─────────────────────────────────────────────────────────────────────────────
 router.post('/refresh', async (req, res, next) => {
   try {
     const rawToken = req.cookies?.refreshToken;
@@ -217,9 +192,6 @@ router.post('/refresh', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// POST /api/auth/logout
-// ─────────────────────────────────────────────────────────────────────────────
 router.post('/logout', async (req, res, next) => {
   try {
     const rawToken = req.cookies?.refreshToken;
@@ -230,9 +202,6 @@ router.post('/logout', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GET /api/auth/me
-// ─────────────────────────────────────────────────────────────────────────────
 router.get('/me', authenticateToken, async (req, res, next) => {
   try {
     const user = await findUserById(req.user.id);
@@ -241,7 +210,6 @@ router.get('/me', authenticateToken, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// DELETE /api/auth/staff/:id — ADMIN ONLY
 router.delete('/staff/:id', authenticateToken, authorizeRole('admin'), async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -254,7 +222,6 @@ router.delete('/staff/:id', authenticateToken, authorizeRole('admin'), async (re
     if (target[0].role === 'admin')
       return res.status(400).json({ success: false, error: 'Cannot delete the admin account' });
 
-    // Revoke sessions first
     await pool.query('DELETE FROM refresh_tokens WHERE user_id = $1', [id]);
     await pool.query('DELETE FROM users WHERE id = $1', [id]);
 

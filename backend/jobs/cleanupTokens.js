@@ -1,7 +1,6 @@
 import cron from 'node-cron';
 import pool from '../config/database.js';
 
-// Runs every day at midnight
 cron.schedule('0 0 * * *', async () => {
     try {
         const { rowCount: expiredTokens } = await pool.query(

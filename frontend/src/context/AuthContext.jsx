@@ -6,24 +6,20 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null);
   const [loading, setLoading] = useState(true);
-  const initDone              = useRef(false);   // StrictMode guard
+  const initDone              = useRef(false);   
 
   useEffect(() => {
-    if (initDone.current) return;   // prevent double-fire in React StrictMode
+    if (initDone.current) return;   
     initDone.current = true;
 
     const init = async () => {
       try {
-        // Step 1: try to get a fresh access token using the httpOnly refresh cookie.
-        // This is the KEY step — it runs even if sessionStorage is empty.
         const { data: refreshData } = await api.post('/auth/refresh');
         sessionStorage.setItem('accessToken', refreshData.accessToken);
 
-        // Step 2: now fetch the user profile with the fresh token
         const { data: meData } = await api.get('/auth/me');
         setUser(meData.user);
       } catch {
-        // Refresh cookie missing/expired → genuinely logged out
         sessionStorage.removeItem('accessToken');
         setUser(null);
       } finally {

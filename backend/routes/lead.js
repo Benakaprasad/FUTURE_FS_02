@@ -9,19 +9,15 @@ import authorizeRole from '../middleware/role.js';
 
 const router = express.Router();
 
-// ─── Role shortcuts ───────────────────────────────────────────────────────────
 const isStaff    = authorizeRole('admin', 'staff');
 const isAdminOnly = authorizeRole('admin');
 
-// ─── UUID validation (DB uses UUID, not integer) ──────────────────────────────
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const isValidUUID = (id) => UUID_REGEX.test(id);
 
-// Valid values must match your DB ENUMs exactly
 const VALID_STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 const VALID_SOURCES  = ['website', 'referral', 'social_media', 'walk_in', 'phone', 'other'];
 
-// ─── GET /api/lead ────────────────────────────────────────────────────────────
 router.get('/', authenticateToken, isStaff, async (req, res, next) => {
     try {
         const { status, search } = req.query;
@@ -42,7 +38,6 @@ router.get('/', authenticateToken, isStaff, async (req, res, next) => {
     }
 });
 
-// ─── GET /api/lead/:id ────────────────────────────────────────────────────────
 router.get('/:id', authenticateToken, isStaff, async (req, res, next) => {
     try {
         if (!isValidUUID(req.params.id)) {
@@ -58,7 +53,6 @@ router.get('/:id', authenticateToken, isStaff, async (req, res, next) => {
     }
 });
 
-// ─── POST /api/lead ───────────────────────────────────────────────────────────
 router.post('/', authenticateToken, isStaff, async (req, res, next) => {
     try {
         const { name, email, phone, source, notes } = req.body;
@@ -80,7 +74,6 @@ router.post('/', authenticateToken, isStaff, async (req, res, next) => {
     }
 });
 
-// ─── PUT /api/lead/:id ────────────────────────────────────────────────────────
 router.put('/:id', authenticateToken, isStaff, async (req, res, next) => {
     try {
         if (!isValidUUID(req.params.id)) {
@@ -105,7 +98,6 @@ router.put('/:id', authenticateToken, isStaff, async (req, res, next) => {
     }
 });
 
-// ─── PATCH /api/lead/:id/status ───────────────────────────────────────────────
 router.patch('/:id/status', authenticateToken, isStaff, async (req, res, next) => {
     try {
         if (!isValidUUID(req.params.id)) {
@@ -126,7 +118,6 @@ router.patch('/:id/status', authenticateToken, isStaff, async (req, res, next) =
     }
 });
 
-// ─── DELETE /api/lead/:id ─────────────────────────────────────────────────────
 router.delete('/:id', authenticateToken, isAdminOnly, async (req, res, next) => {
     try {
         if (!isValidUUID(req.params.id)) {

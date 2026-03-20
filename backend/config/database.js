@@ -13,7 +13,6 @@ const pool = new Pool({
     idleTimeoutMillis:       30000,
     connectionTimeoutMillis: 5000,
 
-    // Render requires SSL for external PostgreSQL connections
     ssl: IS_PROD ? { rejectUnauthorized: false } : false,
 });
 

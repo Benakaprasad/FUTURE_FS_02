@@ -8,7 +8,7 @@ import Dashboard from './pages/Dashboard';
 
 export default function App() {
   return (
-    <AuthProvider>        {/* ← moved outside BrowserRouter is fine, but outside Routes is critical */}
+    <AuthProvider>        
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />

@@ -1,6 +1,5 @@
 import pool from '../config/database.js';
 
-// created_by = the admin's user ID who created this account
 const createUser = async (username, email, hashedPassword, role = 'staff', fullName = null, phone = null, createdBy = null) => {
   const { rows } = await pool.query(
     `INSERT INTO users (username, email, password, role, full_name, phone, created_by)

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/api';
 import styles from './Dashboard.module.css';
 import Analytics from './Analytics';
-import { useConfirm } from './Confirmmodal';   // ← import the hook
+import { useConfirm } from './Confirmmodal';  
 
 const STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 const SOURCES  = ['website', 'referral', 'social_media', 'walk_in', 'phone', 'other'];
@@ -20,7 +20,7 @@ const STATUS_META = {
 export default function Dashboard() {
   const { user, logout }          = useAuth();
   const navigate                  = useNavigate();
-  const { confirm, modal: confirmModal } = useConfirm();   // ← hook
+  const { confirm, modal: confirmModal } = useConfirm();  
   const [tab, setTab]             = useState('leads');
   const [leads, setLeads]         = useState([]);
   const [allLeads, setAllLeads]   = useState([]);
@@ -45,7 +45,6 @@ export default function Dashboard() {
     } catch { /* silent */ }
   }, []);
 
-  // ── Delete staff — confirm() replaces confirm() ───────────────────────────
   const handleDeleteStaff = async (staffId) => {
     const ok = await confirm({
       title:   'Delete Staff Member',
@@ -88,10 +87,10 @@ export default function Dashboard() {
   }, [isAdmin]);
 
   useEffect(() => {
-  if (!user) return;   // ← add this
+  if (!user) return;   
   if (tab === 'leads') { fetchLeads(); fetchAllLeads(); }
   if (tab === 'staff') fetchStaff();
-}, [tab, user, fetchLeads, fetchStaff, fetchAllLeads]);  // ← add user to deps
+}, [tab, user, fetchLeads, fetchStaff, fetchAllLeads]);  
 
   const handleLogout = async () => { await logout(); navigate('/login'); };
 
@@ -154,7 +153,7 @@ export default function Dashboard() {
   return (
     <div className={styles.root}>
 
-      {/* ── Confirm modal — renders on top of everything ── */}
+      {/* Confirm modal */}
       {confirmModal}
 
       {/* ── Sidebar ── */}
@@ -379,7 +378,6 @@ export default function Dashboard() {
   );
 }
 
-// ── Create Lead Modal ─────────────────────────────────────────────────────────
 function LeadModal({ onClose, onSuccess }) {
   const [form, setForm]       = useState({ name: '', email: '', phone: '', source: 'website', notes: '' });
   const [error, setError]     = useState('');
@@ -423,7 +421,6 @@ function LeadModal({ onClose, onSuccess }) {
   );
 }
 
-// ── Create Staff Modal ────────────────────────────────────────────────────────
 function StaffModal({ onClose, onSuccess }) {
   const [form, setForm]         = useState({ username: '', email: '', password: '', full_name: '' });
   const [showPass, setShowPass] = useState(false);
